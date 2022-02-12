@@ -1,0 +1,31 @@
+<md-dialog aria-label="{{ 'EDITOR_TITLE' | translate}}">
+    <form ng-cloak>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>{{ caption | translate }}</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="surveyCloseCrtl.cancel()">
+                    <i class="material-icons">close</i>
+                </md-button>
+            </div>
+        </md-toolbar>
+
+        <md-dialog-content>
+            <div class="md-dialog-content">
+                <p>{{ "EDITOR_SURVEY_CLOSE" | translate }}</p>
+                <md-radio-group ng-model="selected">
+                        <md-radio-button ng-repeat="option in options" class="md-3-line" value="{{option}}">
+                            {{option.dateTime | date:'MM/dd/yyyy @ h:mma'}}
+                        </md-radio-button>
+                </md-radio-group>
+            </div>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <span flex></span>
+            <md-button ng-disabled="!surveyCloseCrtl.valid()" ng-click="surveyCloseCrtl.save()">
+                {{ 'EDITOR_SAVE' | translate}}
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

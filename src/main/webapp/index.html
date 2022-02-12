@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="de.nordakademie.iaa.survey">
+<head>
+    <meta charset="UTF-8">
+    <title>Survey.iaa</title>
+
+    <!-- bower components -->
+    <script type="application/javascript" src="node_modules/angular/angular.js"></script>
+    <script type="application/javascript" src="node_modules/rx/dist/rx.all.js"></script>
+    <script type="application/javascript" src="node_modules/rx-angular/dist/rx.angular.js"></script>
+    <script type="application/javascript" src="node_modules/angular-base64/angular-base64.js"></script>
+    <script type="application/javascript" src="node_modules/angular-resource/angular-resource.js"></script>
+
+
+    <!-- i18n -->
+    <script type="application/javascript" src="node_modules/angular-translate/dist/angular-translate.js"></script>
+
+    <!-- routing -->
+    <script type="application/javascript"
+            src="node_modules/angular-ui-router/release/angular-ui-router.js"></script>
+
+    <!-- angular material -->
+    <script type="application/javascript" src="node_modules/angular-animate/angular-animate.js"></script>
+    <script type="application/javascript" src="node_modules/angular-aria/angular-aria.js"></script>
+    <script type="application/javascript" src="node_modules/angular-messages/angular-messages.js"></script>
+    <script type="application/javascript" src="node_modules/angular-material/angular-material.js"></script>
+    <script type="application/javascript"
+            src="node_modules/angular-material-time-picker/dist/md-time-picker.js"></script>
+
+    <link rel="stylesheet" href="node_modules/angular-material/angular-material.css">
+    <link rel="stylesheet" href="node_modules/angular-material-time-picker/dist/md-time-picker.css">
+    <link rel="stylesheet" href="node_modules/material-icons/iconfont/material-icons.css">
+</head>
+<body ng-cloak layout="column">
+<survey-tool-bar layout="row"></survey-tool-bar>
+<div flex layout="row">
+    <dashboard-side-nav layout="column"></dashboard-side-nav>
+    <md-content flex id="content">
+        <ui-view></ui-view>
+    </md-content>
+</div>
+
+<!-- modules -->
+<script type="application/javascript" src="js/components/i18n/i18n.module.js"></script>
+<script type="application/javascript" src="js/components/routing/routes.module.js"></script>
+<script type="application/javascript" src="js/components/core/core.module.js"></script>
+<script type="application/javascript" src="js/components/domain/core.domain.module.js"></script>
+<script type="application/javascript" src="js/components/cage/cage.module.js"></script>
+<script type="application/javascript" src="js/components/error/error.module.js"></script>
+<script type="application/javascript" src="js/components/authentication/authentication.module.js"></script>
+<script type="application/javascript" src="js/components/editor/editor.module.js"></script>
+<script type="application/javascript" src="js/components/toolbar/toolbar.module.js"></script>
+<script type="application/javascript" src="js/components/dashboard/dashboard.module.js"></script>
+<script type="application/javascript" src="js/components/detail/detail.module.js"></script>
+<script type="application/javascript" src="js/components/app.module.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,81 @@
+<section ng-controller="detailController as detailCrtl">
+    <md-card>
+        <md-card-title>
+            <md-card-title-text>
+                    <span class="md-headline">
+                        {{survey.title}}
+                        <i class="material-icons">
+                            {{ survey.isOpen() ? "lock_open" : "lock_closed"}}
+                        </i>
+                    </span>
+                <span class="md-subhead">
+                       {{"DETAIL_INITIATOR"|translate}}: {{survey.initiator.username}}
+                    </span>
+            </md-card-title-text>
+            <md-card-actions layout="row" layout-align="end center" ng-show="detailCrtl.isOwnSurvey()">
+                <survey-editor-action-button ng-show="!survey.isClosed()" icon="build"
+                                             survey-id="surveyId"></survey-editor-action-button>
+                <delete-survey-action-button icon="delete" survey-id="surveyId"></delete-survey-action-button>
+                <close-survey-action-button ng-show="survey.isOpen()" icon="event"
+                                            survey-id="surveyId"></close-survey-action-button>
+            </md-card-actions>
+        </md-card-title>
+        <md-card-content>
+            <p>{{survey.description}}</p>
+        </md-card-content>
+    </md-card>
+
+    <div layout="row" layout-sm="column" layout-align="space-around" ng-show="computing">
+        <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+    </div>
+
+    <md-card ng-show="!computing">
+        <md-card-content>
+            <table>
+                <thead>
+                <tr>
+                    <td><!-- empty slot --></td>
+                    <td ng-repeat="option in options" layout-align="center center">
+                        <div>{{option.dateTime | date: "shortDate"}}</div>
+                        <div>{{option.dateTime | date: "shortTime"}}</div>
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="participation in participations" class="md-3-line" ng-click="detailCrtl.valueOf()">
+                    <td>{{participation.user.username}}</td>
+                    <td ng-repeat="option in options">
+                        <div>
+                            <i ng-show="detailCrtl.participates(participation, option)"
+                               class="material-icons"
+                               style="padding-left: 25%">done</i>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>{{"DETAIL_SUM"|translate}}</td>
+                    <td ng-repeat="option in options">
+                        <span style="padding-left: 25%">{{detailCrtl.sumParticipationsForOption(option)}}</span>
+                    </td>
+                </tr>
+                <tr ng-show="!detailCrtl.isOwnSurvey() && survey.isOpen()">
+                    <td>{{"DETAIL_YOU"|translate}}</td>
+                    <td ng-repeat="option in options">
+                        <span style="padding-left: 25%">
+                            <md-checkbox ng-disabled="detailCrtl.isOpen()"
+                                     ng-model="option.checked"
+                                     name="tos" aria-label="participate" style="padding-left: 25%">
+                            </md-checkbox>
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </md-card-content>
+        <md-card-actions layout="row" layout-align="end center"
+                         ng-show="!detailCrtl.isOwnSurvey() && survey.isOpen()">
+            <md-button class="md-raised md-accent" ng-click="detailCrtl.save()">{{"DETAIL_SEND"|translate}}</md-button>
+        </md-card-actions>
+    </md-card>
+
+</section>

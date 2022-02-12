@@ -1,0 +1,45 @@
+<md-sidenav style="height: 100%"  md-is-locked-open="$mdMedia('gt-md')" class="md-whiteframe-4dp" ng-show="loggedIn">
+    <md-content flex>
+        <md-tabs md-dynamic-height md-border-bottom>
+            <md-tab label="{{'DASHBOARD_SIDE_NAV_NOTIFICATION_TAB' | translate }}">
+                <md-content class="md-padding">
+                    <md-card ng-repeat="notification in notifications">
+                        <md-card-title>
+                            <md-card-title-text>
+                                <span class="md-headline">
+                                    {{"DASHBOARD_SIDE_NAV_NOTIFICATION_TYPE_" + notification.notificationType | translate}}
+                                </span>
+                                <span class="md-subhead">
+                                    {{"DASHBOARD_SIDE_NAV_NOTIFICATION_TYPE_DESC_" + notification.notificationType | translate}}
+                                </span>
+                            </md-card-title-text>
+                        </md-card-title>
+
+                        <md-card-actions layout="row" flex>
+                            <span flex></span>
+                            <md-button ng-click="sideNavCrtl.viewDetails(notification.survey)" class="md-primary">
+                                {{"DASHBOARD_SIDE_NAV_SHOW" | translate}}
+                            </md-button>
+                            <md-button ng-click="sideNavCrtl.delete(notification)"
+                                       class="md-primary md-icon-button">
+                            <i class="material-icons">delete</i>
+                        </md-button>
+                        </md-card-actions>
+                    </md-card>
+                </md-content>
+            </md-tab>
+            <md-tab label="{{'DASHBOARD_SIDE_NAV_EVENT_TAB' | translate }}">
+                <md-content class="md-padding">
+                    <md-card ng-repeat="event in events">
+                        <md-card-title>
+                            <md-card-title-text>
+                                <span class="md-headline">{{event.title}}</span>
+                                <span class="md-subhead">{{event.time | date: "dd.MM.yyyy @hh.mm"}}</span>
+                            </md-card-title-text>
+                        </md-card-title>
+                    </md-card>
+                </md-content>
+            </md-tab>
+        </md-tabs>
+    </md-content>
+</md-sidenav>

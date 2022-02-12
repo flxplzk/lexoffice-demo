@@ -1,0 +1,25 @@
+<md-content flex layout-padding layout="column" ng-cloak>
+    <md-tabs md-dynamic-height flex md-border-bottom>
+        <md-tab label="{{ 'DASHBOARD_TITLE_ALL' | translate }}">
+            <md-content>
+               <dashboard-survey-listing></dashboard-survey-listing>
+            </md-content>
+        </md-tab>
+        <md-tab label="{{'DASHBOARD_TITLE_OWN' | translate }}">
+            <md-content>
+                <dashboard-survey-listing filter="own"></dashboard-survey-listing>
+            </md-content>
+        </md-tab>
+        <md-tab label="{{'DASHBOARD_TITLE_OPEN' | translate }}">
+            <md-content>
+                <dashboard-survey-listing filter="open"></dashboard-survey-listing>
+            </md-content>
+        </md-tab>
+        <md-tab label="{{'DASHBOARD_TITLE_PARTICIPATED' | translate }}">
+            <md-content>
+                <dashboard-survey-listing filter="participated"></dashboard-survey-listing>
+            </md-content>
+        </md-tab>
+    </md-tabs>
+
+</md-content>
