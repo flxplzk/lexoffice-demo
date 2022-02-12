@@ -17,24 +17,22 @@ import de.nordakademie.iaa.examsurvey.service.SurveyService;
 import java.util.List;
 import java.util.Set;
 
-import static de.nordakademie.iaa.examsurvey.persistence.specification.SurveySpecifications.hasTitle;
-import static de.nordakademie.iaa.examsurvey.persistence.specification.SurveySpecifications.isVisibleForUserWithFilterCriteria;
-
 /**
  * UserService implementation.
  *
  * @author felix plazek
  */
-public class SurveyServiceImpl extends AbstractAuditModelService implements SurveyService {
+public class SurveyServiceImpl implements SurveyService {
     private final NotificationService notificationService;
     private final OptionService optionService;
     private final ParticipationService participationService;
+    private final SurveyRepository surveyRepository;
 
     public SurveyServiceImpl(final SurveyRepository surveyRepository,
                              final NotificationService notificationService,
                              final OptionService optionService,
                              final ParticipationService participationService) {
-        super(surveyRepository);
+        this.surveyRepository = surveyRepository;
         this.notificationService = notificationService;
         this.optionService = optionService;
         this.participationService = participationService;
@@ -45,12 +43,18 @@ public class SurveyServiceImpl extends AbstractAuditModelService implements Surv
      */
     @Override
     public Survey createSurvey(final Survey survey, final User initiator) {
-        requireNonNullUser(initiator);
+        requireInitiator(initiator);
         requireNonExistent(survey);
         survey.setInitiator(initiator);
         Survey createdSurvey = surveyRepository.save(survey);
         optionService.saveOptionsForSurvey(survey.getOptions(), createdSurvey);
         return createdSurvey;
+    }
+
+    private void requireInitiator(User initiator) {
+        if (initiator == null) {
+            throw new PermissionDeniedException("initiator must be non null");
+        }
     }
 
     /**
@@ -96,8 +100,8 @@ public class SurveyServiceImpl extends AbstractAuditModelService implements Surv
     @Override
     public List<Survey> loadAllSurveysWithFilterCriteriaAndUser(final Set<FilterCriteria> filterCriteria,
                                                                 final User requestingUser) {
-        requireNonNullUser(requestingUser);
-        return surveyRepository.findAll(isVisibleForUserWithFilterCriteria(requestingUser, filterCriteria));
+        requireInitiator(requestingUser);
+        return surveyRepository.findAllByIsVisibleForUserWithFilterCriteria(requestingUser, filterCriteria);
     }
 
     /**
@@ -105,14 +109,19 @@ public class SurveyServiceImpl extends AbstractAuditModelService implements Surv
      */
     @Override
     public Survey loadSurveyWithUser(final Long identifier, final User authenticatedUser) {
-        requireNonNullUser(authenticatedUser);
-        return getSurveyVisibleForUser(identifier, authenticatedUser);
+        if (authenticatedUser == null) {
+            throw new PermissionDeniedException("initiator must be non null");
+        }
+        return surveyRepository.findOneByIdAndVisibleForUser(identifier, authenticatedUser)
+                .orElseThrow(ResourceNotFoundException::new);
     }
 
     // ########################################## VALIDATION METHODS ###################################################
 
     private Survey findDeletableSurveyWithInitiator(Long id, User authenticatedUser) {
-        requireNonNullUser(authenticatedUser);
+        if (authenticatedUser == null) {
+            throw new PermissionDeniedException("initiator must be non null");
+        }
         Survey existentSurvey = surveyRepository.findById(id)
                 .orElseThrow(ResourceNotFoundException::new);
         requireInitiator(authenticatedUser, existentSurvey);
@@ -120,7 +129,9 @@ public class SurveyServiceImpl extends AbstractAuditModelService implements Surv
     }
 
     private Survey findModifiableSurveyWithInitiator(Survey survey, User authenticatedUser) {
-        requireNonNullUser(authenticatedUser);
+        if (authenticatedUser == null) {
+            throw new PermissionDeniedException("initiator must be non null");
+        }
         final Survey persistedSurvey = getExistent(survey);
         requireInitiator(authenticatedUser, persistedSurvey);
         requireValidStatus(persistedSurvey.getSurveyStatus());
@@ -148,7 +159,7 @@ public class SurveyServiceImpl extends AbstractAuditModelService implements Surv
 
     private void requireNonExistent(final Survey survey) {
         // if survey with title already exists; throw exception
-        if (surveyRepository.findOne(hasTitle(survey.getTitle())).isPresent()) {
+        if (surveyRepository.findOneByTitle(survey.getTitle()).isPresent()) {
             throw new SurveyAlreadyExistsException();
         }
     }

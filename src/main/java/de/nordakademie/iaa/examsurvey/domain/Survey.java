@@ -36,6 +36,11 @@ public class Survey extends AuditModel {
     private SurveyStatus surveyStatus;
     private Set<Option> options;
 
+    @Transient
+    public boolean isOpen() {
+        return SurveyStatus.OPEN.equals(this.surveyStatus);
+    }
+
     @NaturalId
     @Size(max = 50)
     @Column(name = "title", nullable = false)
@@ -124,5 +129,11 @@ public class Survey extends AuditModel {
     @Override
     public int hashCode() {
         return Objects.hashCode(super.hashCode(), title, description, initiator, surveyStatus);
+    }
+
+    @Transient
+    public boolean isInitiator(final User authenticatedUser) {
+        return this.initiator != null &&
+                this.initiator.equals(authenticatedUser);
     }
 }

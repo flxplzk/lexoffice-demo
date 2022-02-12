@@ -11,8 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
-import static de.nordakademie.iaa.examsurvey.persistence.specification.UserSpecifications.byUsername;
-
 /**
  * UserService implementation.
  *
@@ -49,7 +47,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private Optional<User> findUserByUsername(final String userName) {
-        return userRepository.findOne(byUsername(userName));
+        return userRepository.findOneByUsername(userName);
     }
 
     private void requireNonExistent(final User user) {

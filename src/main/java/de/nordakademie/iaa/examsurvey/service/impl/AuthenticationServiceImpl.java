@@ -21,7 +21,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      */
     @Override
     public User getCurrentAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder
+        final Authentication authentication = SecurityContextHolder
                 .getContext()
                 .getAuthentication();
         return authentication == null

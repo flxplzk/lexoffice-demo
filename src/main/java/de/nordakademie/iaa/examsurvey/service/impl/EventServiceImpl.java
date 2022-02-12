@@ -1,10 +1,6 @@
 package de.nordakademie.iaa.examsurvey.service.impl;
 
-import de.nordakademie.iaa.examsurvey.domain.Event;
-import de.nordakademie.iaa.examsurvey.domain.NotificationType;
-import de.nordakademie.iaa.examsurvey.domain.Option;
-import de.nordakademie.iaa.examsurvey.domain.Participation;
-import de.nordakademie.iaa.examsurvey.domain.User;
+import de.nordakademie.iaa.examsurvey.domain.*;
 import de.nordakademie.iaa.examsurvey.exception.PermissionDeniedException;
 import de.nordakademie.iaa.examsurvey.persistence.EventRepository;
 import de.nordakademie.iaa.examsurvey.persistence.ParticipationRepository;
@@ -13,14 +9,9 @@ import de.nordakademie.iaa.examsurvey.service.NotificationService;
 import de.nordakademie.iaa.examsurvey.service.SurveyService;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static de.nordakademie.iaa.examsurvey.persistence.specification.EventSpecifications.byUser;
-import static de.nordakademie.iaa.examsurvey.persistence.specification.ParticipationSpecifications.bySurvey;
-
-/**
- * @author felix plazek
- */
 public class EventServiceImpl implements EventService {
     private final SurveyService surveyService;
     private final EventRepository eventRepository;
@@ -44,24 +35,26 @@ public class EventServiceImpl implements EventService {
     public Event createEvent(final Event event, final User authenticatedUser) {
         surveyService.closeSurvey(event.getSurvey(), authenticatedUser);
         notificationService.notifyUsersWithNotificationType(NotificationType.EVENT_PLANNED, event.getSurvey());
-        event.setParticipants(
-                participationRepository.findAll(bySurvey(event.getSurvey()))
-                        .stream()
-                        .filter(participation -> participation.getOptions()
-                                .stream()
-                                .map(Option::getDateTime)
-                                .collect(Collectors.toSet())
-                                .contains(event.getTime()))
-                        .map(Participation::getUser)
-                        .collect(Collectors.toSet())
-        );
+        event.setParticipants(collectParticipants(event));
         return eventRepository.save(event);
     }
 
     @Override
     public List<Event> loadAllEventsForAuthenticatedUser(final User authenticatedUser) {
         requireNonNullUser(authenticatedUser);
-        return eventRepository.findAll(byUser(authenticatedUser));
+        return eventRepository.findAllByUser(authenticatedUser);
+    }
+
+    private Set<User> collectParticipants(Event event) {
+        return participationRepository.findAllBySurvey(event.getSurvey())
+                .stream()
+                .filter(participation -> participation.getOptions()
+                        .stream()
+                        .map(Option::getDateTime)
+                        .collect(Collectors.toSet())
+                        .contains(event.getTime()))
+                .map(Participation::getUser)
+                .collect(Collectors.toSet());
     }
 
     private void requireNonNullUser(final User user) {

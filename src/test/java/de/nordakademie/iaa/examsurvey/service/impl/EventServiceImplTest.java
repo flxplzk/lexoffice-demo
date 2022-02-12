@@ -6,10 +6,13 @@ import de.nordakademie.iaa.examsurvey.domain.User;
 import de.nordakademie.iaa.examsurvey.exception.ResourceNotFoundException;
 import de.nordakademie.iaa.examsurvey.persistence.EventRepository;
 import de.nordakademie.iaa.examsurvey.persistence.ParticipationRepository;
+import de.nordakademie.iaa.examsurvey.service.EventService;
 import de.nordakademie.iaa.examsurvey.service.NotificationService;
 import de.nordakademie.iaa.examsurvey.service.SurveyService;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
@@ -24,22 +27,27 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class EventServiceImplTest {
-
+    @Mock
     private SurveyService surveyService;
+    @Mock
     private EventRepository eventRepository;
+    @Mock
     private NotificationService notificationService;
+    @Mock
     private ParticipationRepository participationRepository;
-    private de.nordakademie.iaa.examsurvey.service.EventService serviceUnderTest;
+
+    private EventService serviceUnderTest;
 
     @Before
     public void setUp() {
-        surveyService = mock(SurveyService.class);
-        eventRepository = mock(EventRepository.class);
-        notificationService = mock(NotificationService.class);
-        participationRepository = mock(ParticipationRepository.class);
-        serviceUnderTest = new EventServiceImpl(surveyService, eventRepository, notificationService, participationRepository);
+        MockitoAnnotations.initMocks(this);
 
-
+        this.serviceUnderTest = new EventServiceImpl(
+                surveyService,
+                eventRepository,
+                notificationService,
+                participationRepository
+        );
     }
 
     @Test
@@ -58,7 +66,7 @@ public class EventServiceImplTest {
 
         //THEN
         assertEquals(returned, event);
-        verify(participationRepository, times(1)).findAll(any(Specification.class));
+        verify(participationRepository, times(1)).findAllBySurvey(survey);
         verify(surveyService, times(1)).closeSurvey(survey, user);
     }
 

@@ -4,29 +4,22 @@ import de.nordakademie.iaa.examsurvey.domain.Option;
 import de.nordakademie.iaa.examsurvey.domain.Survey;
 import de.nordakademie.iaa.examsurvey.domain.User;
 import de.nordakademie.iaa.examsurvey.exception.MissingDataException;
+import de.nordakademie.iaa.examsurvey.exception.ResourceNotFoundException;
 import de.nordakademie.iaa.examsurvey.persistence.OptionRepository;
 import de.nordakademie.iaa.examsurvey.persistence.SurveyRepository;
-import de.nordakademie.iaa.examsurvey.persistence.specification.OptionSpecifications;
 import de.nordakademie.iaa.examsurvey.service.OptionService;
-import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static de.nordakademie.iaa.examsurvey.persistence.specification.OptionSpecifications.hasSurvey;
-
-/**
- * @author felix plazek
- */
-public class OptionServiceImpl
-        extends AbstractAuditModelService
-        implements OptionService {
+public class OptionServiceImpl implements OptionService {
     private final OptionRepository optionRepository;
+    private final SurveyRepository surveyRepository;
 
     public OptionServiceImpl(final SurveyRepository surveyRepository,
                              final OptionRepository repository) {
-        super(surveyRepository);
+        this.surveyRepository = surveyRepository;
         this.optionRepository = repository;
     }
 
@@ -78,11 +71,12 @@ public class OptionServiceImpl
     @Override
     public List<Option> loadAllOptionsOfSurveyForUser(final Long surveyId,
                                                       final User authenticatedUser) {
-        final Survey survey = getSurveyVisibleForUser(surveyId, authenticatedUser);
-        return optionRepository.findAll(OptionSpecifications.hasSurvey(survey), Sort.by(Sort.Order.asc("dateTime")));
+        final Survey survey = this.surveyRepository.findOneByIdAndVisibleForUser(surveyId, authenticatedUser)
+                .orElseThrow(ResourceNotFoundException::new);
+        return optionRepository.findAllBySurvey(survey, true);
     }
 
     private List<Option> findOptionsBySurvey(final Survey survey) {
-        return optionRepository.findAll(hasSurvey(survey));
+        return optionRepository.findAllBySurvey(survey, false);
     }
 }

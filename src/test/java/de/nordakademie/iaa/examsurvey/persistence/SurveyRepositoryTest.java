@@ -3,7 +3,6 @@ package de.nordakademie.iaa.examsurvey.persistence;
 import de.nordakademie.iaa.examsurvey.domain.Survey;
 import de.nordakademie.iaa.examsurvey.domain.SurveyStatus;
 import de.nordakademie.iaa.examsurvey.domain.User;
-import de.nordakademie.iaa.examsurvey.persistence.specification.SurveySpecifications;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,7 +54,7 @@ public class SurveyRepositoryTest {
         // GIVEN
 
         // WHEN
-        List<Survey> all = surveyRepository.findAll(SurveySpecifications.isVisibleForUser(USER_BENGT));
+        List<Survey> all = surveyRepository.findAllByIsVisibleForUserWithFilterCriteria(USER_BENGT, Collections.emptySet());
 
         // THEN
         assertThat(all.size(), is(11));
@@ -72,7 +72,7 @@ public class SurveyRepositoryTest {
         // GIVEN
 
         // WHEN
-        List<Survey> all = surveyRepository.findAll(SurveySpecifications.isVisibleForUser(USER_ROBERT));
+        List<Survey> all = surveyRepository.findAllByIsVisibleForUserWithFilterCriteria(USER_ROBERT, Collections.emptySet());
 
         // THEN
         assertThat(all.size(), is(11));
@@ -90,7 +90,7 @@ public class SurveyRepositoryTest {
         // GIVEN
 
         // WHEN
-        Optional<Survey> nonExistentTitle = surveyRepository.findOne(SurveySpecifications.hasTitle("NonExistentTitle"));
+        Optional<Survey> nonExistentTitle = surveyRepository.findOneByTitle("NonExistentTitle");
 
         // THEN
         assertThat(nonExistentTitle.isPresent(), is(false));
@@ -101,7 +101,7 @@ public class SurveyRepositoryTest {
         // GIVEN
 
         // WHEN
-        Optional<Survey> nonExistentTitle = surveyRepository.findOne(SurveySpecifications.hasTitle(TEST_SURVEY_FELIX_OPEN));
+        Optional<Survey> nonExistentTitle = surveyRepository.findOneByTitle(TEST_SURVEY_FELIX_OPEN);
 
         // THEN
         assertThat(nonExistentTitle.isPresent(), is(true));
@@ -112,7 +112,7 @@ public class SurveyRepositoryTest {
         // GIVEN
 
         // WHEN
-        Optional<Survey> optionalSurvey = surveyRepository.findOne(SurveySpecifications.hasIdAndVisibleForUser(-11L, USER_FELIX));
+        Optional<Survey> optionalSurvey = surveyRepository.findOneByIdAndVisibleForUser(-11L, USER_FELIX);
 
         // THEN
         assertThat(optionalSurvey.isPresent(), is(false));
@@ -123,7 +123,7 @@ public class SurveyRepositoryTest {
         // GIVEN
 
         // WHEN
-        Optional<Survey> optionalSurvey = surveyRepository.findOne(SurveySpecifications.hasIdAndVisibleForUser(-11L, USER_BENGT));
+        Optional<Survey> optionalSurvey = surveyRepository.findOneByIdAndVisibleForUser(-11L, USER_BENGT);
 
         // THEN
         assertThat(optionalSurvey.isPresent(), is(true));
@@ -134,7 +134,7 @@ public class SurveyRepositoryTest {
         // GIVEN
 
         // WHEN
-        Optional<Survey> optionalSurvey = surveyRepository.findOne(SurveySpecifications.hasIdAndVisibleForUser(-1L, USER_FELIX));
+        Optional<Survey> optionalSurvey = surveyRepository.findOneByIdAndVisibleForUser(-1L, USER_FELIX);
 
         // THEN
         assertThat(optionalSurvey.isPresent(), is(true));
@@ -145,7 +145,7 @@ public class SurveyRepositoryTest {
         // GIVEN
 
         // WHEN
-        Optional<Survey> optionalSurvey = surveyRepository.findOne(SurveySpecifications.hasIdAndVisibleForUser(-1L, USER_BENGT));
+        Optional<Survey> optionalSurvey = surveyRepository.findOneByIdAndVisibleForUser(-1L, USER_BENGT);
 
         // THEN
         assertThat(optionalSurvey.isPresent(), is(true));
@@ -154,13 +154,13 @@ public class SurveyRepositoryTest {
     @Test
     public void findOne_byHasIdAndVisible_WithPrivateAndInitiator_AfterDeleting() {
         // GIVEN
-        Optional<Survey> optionalSurvey = surveyRepository.findOne(SurveySpecifications.hasIdAndVisibleForUser(-14L, USER_FELIX));
+        Optional<Survey> optionalSurvey = surveyRepository.findOneByIdAndVisibleForUser(-14L, USER_FELIX);
 
         // WHEN
         assertThat(optionalSurvey.isPresent(), is(true));
         surveyRepository.delete(optionalSurvey.get());
 
-        optionalSurvey = surveyRepository.findOne(SurveySpecifications.hasIdAndVisibleForUser(-14L, USER_FELIX));
+        optionalSurvey = surveyRepository.findOneByIdAndVisibleForUser(-14L, USER_FELIX);
 
         // THEN
         assertThat(optionalSurvey.isPresent(), is(false));

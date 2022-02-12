@@ -41,7 +41,7 @@ public interface SurveyService {
      * @param requestingUser which requests
      * @return all surveys relevant for given {@link User}
      */
-    List<Survey> loadAllSurveysWithFilterCriteriaAndUser(Set<FilterCriteria> filterCriteria, @NotNull final User requestingUser);
+    List<Survey> loadAllSurveysWithFilterCriteriaAndUser(final Set<FilterCriteria> filterCriteria, @NotNull final User requestingUser);
 
     /**
      * Loads the requested Survey with id = {@param identifier} for
