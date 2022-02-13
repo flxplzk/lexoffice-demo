@@ -13,18 +13,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.jpa.domain.Specification;
 
-import java.util.List;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
 public class EventServiceImplTest {
     @Mock
@@ -42,7 +34,7 @@ public class EventServiceImplTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        this.serviceUnderTest = new EventServiceImpl(
+        this.serviceUnderTest = new EventService(
                 surveyService,
                 eventRepository,
                 notificationService,

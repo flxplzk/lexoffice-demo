@@ -9,13 +9,11 @@ import de.nordakademie.iaa.examsurvey.exception.SurveyAlreadyExistsException;
 import de.nordakademie.iaa.examsurvey.persistence.OptionRepository;
 import de.nordakademie.iaa.examsurvey.persistence.ParticipationRepository;
 import de.nordakademie.iaa.examsurvey.persistence.SurveyRepository;
-import de.nordakademie.iaa.examsurvey.service.NotificationService;
-import de.nordakademie.iaa.examsurvey.service.OptionService;
-import de.nordakademie.iaa.examsurvey.service.ParticipationService;
-import de.nordakademie.iaa.examsurvey.service.SurveyService;
+import de.nordakademie.iaa.examsurvey.service.*;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.jpa.domain.Specification;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,24 +29,31 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class SurveyServiceImplTest {
-    private SurveyService surveyService;
+    @Mock
     private OptionRepository optionRepository;
+    @Mock
     private SurveyRepository surveyRepository;
+    @Mock
     private ParticipationRepository participationRepository;
+    @Mock
     private NotificationService notificationService;
+    @Mock
     private OptionService optionService;
+    @Mock
     private ParticipationService participationService;
+
+    private SurveyService surveyService;
 
     @Before
     public void setUp() throws Exception {
-        optionRepository = mock(OptionRepository.class);
-        surveyRepository = mock(SurveyRepository.class);
-        participationRepository = mock(ParticipationRepository.class);
-        notificationService = mock(NotificationService.class);
-        optionService = mock(OptionService.class);
-        participationService = mock(ParticipationService.class);
-        surveyService = new SurveyServiceImpl(surveyRepository,
-                notificationService, optionService, participationService);
+        MockitoAnnotations.initMocks(this);
+
+        this.surveyService = new SurveyService(
+                surveyRepository,
+                notificationService,
+                optionService,
+                participationService
+        );
     }
 
     @Test(expected = PermissionDeniedException.class)

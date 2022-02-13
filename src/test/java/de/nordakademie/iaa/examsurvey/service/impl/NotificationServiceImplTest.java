@@ -1,6 +1,5 @@
 package de.nordakademie.iaa.examsurvey.service.impl;
 
-import de.nordakademie.iaa.examsurvey.service.NotificationService;
 import org.junit.Test;
 
 public class NotificationServiceImplTest {

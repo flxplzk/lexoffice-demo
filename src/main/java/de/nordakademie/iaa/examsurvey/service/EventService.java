@@ -1,19 +1,32 @@
 package de.nordakademie.iaa.examsurvey.service;
 
-import de.nordakademie.iaa.examsurvey.domain.Event;
-import de.nordakademie.iaa.examsurvey.domain.Survey;
-import de.nordakademie.iaa.examsurvey.domain.User;
+import de.nordakademie.iaa.examsurvey.domain.*;
+import de.nordakademie.iaa.examsurvey.exception.PermissionDeniedException;
+import de.nordakademie.iaa.examsurvey.persistence.EventRepository;
+import de.nordakademie.iaa.examsurvey.persistence.ParticipationRepository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-/**
- * @author felix plazek
- */
 @Transactional(propagation = Propagation.REQUIRED)
-public interface EventService {
+public class EventService {
+    private final SurveyService surveyService;
+    private final EventRepository eventRepository;
+    private final NotificationService notificationService;
+    private final ParticipationRepository participationRepository;
+
+    public EventService(final SurveyService surveyService,
+                        final EventRepository eventRepository,
+                        final NotificationService notificationService,
+                        final ParticipationRepository participationRepository) {
+        this.surveyService = surveyService;
+        this.eventRepository = eventRepository;
+        this.notificationService = notificationService;
+        this.participationRepository = participationRepository;
+    }
 
     /**
      * creates event with the authenticated user.
@@ -24,8 +37,12 @@ public interface EventService {
      * @param authenticatedUser that requests
      * @return created event
      */
-    Event createEvent(@NotNull final Event event,
-                      @NotNull final User authenticatedUser);
+    public Event createEvent(final Event event, final User authenticatedUser) {
+        surveyService.closeSurvey(event.getSurvey(), authenticatedUser);
+        notificationService.notifyUsersWithNotificationType(NotificationType.EVENT_PLANNED, event.getSurvey());
+        event.setParticipants(collectParticipants(event));
+        return eventRepository.save(event);
+    }
 
     /**
      * finds nd returns all events for {@param authenticated}
@@ -33,5 +50,26 @@ public interface EventService {
      * @param authenticatedUser that requests
      * @return events
      */
-    List<Event> loadAllEventsForAuthenticatedUser(@NotNull final User authenticatedUser);
+    public List<Event> loadAllEventsForAuthenticatedUser(final User authenticatedUser) {
+        requireNonNullUser(authenticatedUser);
+        return eventRepository.findAllByUser(authenticatedUser);
+    }
+
+    private Set<User> collectParticipants(Event event) {
+        return participationRepository.findAllBySurvey(event.getSurvey())
+                .stream()
+                .filter(participation -> participation.getOptions()
+                        .stream()
+                        .map(Option::getDateTime)
+                        .collect(Collectors.toSet())
+                        .contains(event.getTime()))
+                .map(Participation::getUser)
+                .collect(Collectors.toSet());
+    }
+
+    private void requireNonNullUser(final User user) {
+        if (user == null) {
+            throw new PermissionDeniedException("initiator must be non null");
+        }
+    }
 }

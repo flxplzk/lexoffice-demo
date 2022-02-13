@@ -13,6 +13,8 @@ import de.nordakademie.iaa.examsurvey.service.ParticipationService;
 import de.nordakademie.iaa.examsurvey.service.SurveyService;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 
@@ -21,24 +23,23 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class SurveyControllerTest {
+    @Mock
     private SurveyController controllerUnderTest;
+    @Mock
     private SurveyService surveyService;
+    @Mock
     private AuthenticationService authenticationService;
+    @Mock
     private ParticipationService participationService;
+    @Mock
     private OptionService optionService;
 
     @Before
     public void setUp() {
-        surveyService = mock(SurveyService.class);
-        authenticationService = mock(AuthenticationService.class);
-        participationService = mock(ParticipationService.class);
-        optionService = mock(OptionService.class);
+        MockitoAnnotations.initMocks(this);
         controllerUnderTest = new SurveyController(surveyService, authenticationService, optionService, participationService);
     }
 
