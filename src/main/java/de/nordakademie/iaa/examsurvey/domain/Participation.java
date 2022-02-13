@@ -2,6 +2,8 @@ package de.nordakademie.iaa.examsurvey.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.Entity;
@@ -18,40 +20,18 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "participations")
+@Getter
+@Setter
 public class Participation extends AuditModel {
-    private User user;
-    private Survey survey;
-    private Set<Option> options;
-
     @ManyToOne
     @NaturalId
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
+    private User user;
     @ManyToOne
     @NaturalId
     @JsonIgnore
-    public Survey getSurvey() {
-        return survey;
-    }
-
-    public void setSurvey(Survey survey) {
-        this.survey = survey;
-    }
-
+    private Survey survey;
     @ManyToMany(fetch = FetchType.LAZY)
-    public Set<Option> getOptions() {
-        return options;
-    }
-
-    public void setOptions(Set<Option> options) {
-        this.options = options;
-    }
+    private Set<Option> options;
 
     @Override
     public boolean equals(Object o) {

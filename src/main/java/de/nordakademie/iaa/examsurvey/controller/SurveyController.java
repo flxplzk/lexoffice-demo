@@ -1,6 +1,9 @@
 package de.nordakademie.iaa.examsurvey.controller;
 
 import com.google.common.collect.Sets;
+import de.nordakademie.iaa.examsurvey.controller.dto.OptionDTO;
+import de.nordakademie.iaa.examsurvey.controller.dto.ParticipationDTO;
+import de.nordakademie.iaa.examsurvey.controller.dto.SurveyDTO;
 import de.nordakademie.iaa.examsurvey.controller.filtercriterion.FilterCriteria;
 import de.nordakademie.iaa.examsurvey.domain.Option;
 import de.nordakademie.iaa.examsurvey.domain.Participation;
@@ -10,12 +13,16 @@ import de.nordakademie.iaa.examsurvey.service.AuthenticationService;
 import de.nordakademie.iaa.examsurvey.service.OptionService;
 import de.nordakademie.iaa.examsurvey.service.ParticipationService;
 import de.nordakademie.iaa.examsurvey.service.SurveyService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Controller for resources concerning {@link Survey}
@@ -35,16 +42,19 @@ public class SurveyController {
     private final AuthenticationService authenticationService;
     private final OptionService optionService;
     private final ParticipationService participationService;
+    private final ModelMapper modelMapper;
 
     @Autowired
     public SurveyController(final SurveyService surveyService,
                             final AuthenticationService authenticationService,
                             final OptionService optionService,
-                            final ParticipationService participationService) {
+                            final ParticipationService participationService,
+                            final ModelMapper modelMapper) {
         this.surveyService = surveyService;
         this.authenticationService = authenticationService;
         this.optionService = optionService;
         this.participationService = participationService;
+        this.modelMapper = modelMapper;
     }
 
     /**
@@ -53,12 +63,23 @@ public class SurveyController {
      * @param survey to create
      * @return persisted Survey
      */
-    @RequestMapping(value = PATH_SURVEYS,
-            method = RequestMethod.POST,
+    @PostMapping(
+            value = PATH_SURVEYS,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public Survey createSurvey(@RequestBody Survey survey) {
-        return surveyService.createSurvey(survey, getAuthenticatedUser());
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity<SurveyDTO> createSurvey(@RequestBody final SurveyDTO survey) {
+        final Survey createdSurvey = surveyService.createSurvey(asSurvey(survey), getAuthenticatedUser());
+
+        return ResponseEntity.ok(asSurveyDto(createdSurvey));
+    }
+
+    private SurveyDTO asSurveyDto(Survey createdSurvey) {
+        return this.modelMapper.map(createdSurvey, SurveyDTO.class);
+    }
+
+    private Survey asSurvey(final SurveyDTO survey) {
+        return this.modelMapper.map(survey, Survey.class);
     }
 
     /**
@@ -68,14 +89,20 @@ public class SurveyController {
      * @param survey to update
      * @return updated Survey
      */
-    @RequestMapping(value = PATH_SURVEYS + "/{" + PATH_V_IDENTIFIER + "}",
-            method = RequestMethod.PUT,
+    @PutMapping(
+            value = PATH_SURVEYS + "/{" + PATH_V_IDENTIFIER + "}",
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public Survey updateSurvey(@PathVariable(name = PATH_V_IDENTIFIER) Long id,
-                               @RequestBody Survey survey) {
+    public ResponseEntity<SurveyDTO> updateSurvey(
+            @PathVariable(name = PATH_V_IDENTIFIER) Long id,
+            @RequestBody SurveyDTO survey) {
         survey.setId(id);
-        return surveyService.update(survey, getAuthenticatedUser());
+        final Survey updatedSurvey = surveyService.update(
+                asSurvey(survey),
+                getAuthenticatedUser()
+        );
+
+        return ResponseEntity.ok(asSurveyDto(updatedSurvey));
     }
 
     /**
@@ -83,8 +110,7 @@ public class SurveyController {
      *
      * @param id of survey to delete
      */
-    @RequestMapping(value = PATH_SURVEYS + "/{" + PATH_V_IDENTIFIER + "}",
-            method = RequestMethod.DELETE)
+    @DeleteMapping(value = PATH_SURVEYS + "/{" + PATH_V_IDENTIFIER + "}")
     public void deleteSurvey(@PathVariable(name = PATH_V_IDENTIFIER) Long id) {
         surveyService.deleteSurvey(id, getAuthenticatedUser());
     }
@@ -95,13 +121,17 @@ public class SurveyController {
      * @param filterParams to filter result with
      * @return retrieved surveys
      */
-    @RequestMapping(value = PATH_SURVEYS,
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<Survey> loadSurveys(@RequestParam(name = "filter", required = false) final List<String> filterParams) {
-        Set<FilterCriteria> filterCriteria = FilterCriteria.of(
-                filterParams != null ? Sets.newHashSet(filterParams) : Sets.newHashSet());
-        return surveyService.loadAllSurveysWithFilterCriteriaAndUser(filterCriteria, getAuthenticatedUser());
+    @GetMapping(
+            value = PATH_SURVEYS,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity<List<SurveyDTO>> loadSurveys(@RequestParam(name = "filter", required = false) final List<String> filterParams) {
+        final Set<FilterCriteria> filterCriteria = FilterCriteria.of(filterParams != null ? Sets.newHashSet(filterParams) : Sets.newHashSet());
+        final List<SurveyDTO> surveys = surveyService.loadAllSurveysWithFilterCriteriaAndUser(filterCriteria, getAuthenticatedUser()).stream()
+                .map(this::asSurveyDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(surveys);
     }
 
     /**
@@ -110,11 +140,13 @@ public class SurveyController {
      * @param id of survey to load
      * @return survey with id {@param id}
      */
-    @RequestMapping(value = PATH_SURVEYS_IDENTIFIER,
-            method = RequestMethod.GET,
+    @GetMapping(
+            value = PATH_SURVEYS_IDENTIFIER,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public Survey loadSurvey(@PathVariable(value = PATH_V_IDENTIFIER) final Long id) {
-        return surveyService.loadSurveyWithUser(id, getAuthenticatedUser());
+    public ResponseEntity<SurveyDTO> loadSurvey(@PathVariable(value = PATH_V_IDENTIFIER) final Long id) {
+        final Survey survey = surveyService.loadSurveyWithUser(id, getAuthenticatedUser());
+
+        return ResponseEntity.ok(asSurveyDto(survey));
     }
 
     /**
@@ -123,11 +155,20 @@ public class SurveyController {
      * @param id of survey to load the options
      * @return options for the survey
      */
-    @RequestMapping(value = PATH_SURVEY_OPTIONS,
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<Option> loadOptions(@PathVariable(value = PATH_V_IDENTIFIER) Long id) {
-        return optionService.loadAllOptionsOfSurveyForUser(id, getAuthenticatedUser());
+    @GetMapping(
+            value = PATH_SURVEY_OPTIONS,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity<List<OptionDTO>> loadOptions(@PathVariable(value = PATH_V_IDENTIFIER) Long id) {
+        final List<OptionDTO> optionsDtos = optionService.loadAllOptionsOfSurveyForUser(id, getAuthenticatedUser()).stream()
+                .map(this::asOptionDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(optionsDtos);
+    }
+
+    private OptionDTO asOptionDto(final Option option) {
+        return this.modelMapper.map(option, OptionDTO.class);
     }
 
     /**
@@ -136,11 +177,23 @@ public class SurveyController {
      * @param id of survey to load the participations
      * @return participations for the survey
      */
-    @RequestMapping(value = PATH_SURVEY_PARTICIPATIONS,
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<Participation> loadParticipations(@PathVariable(name = PATH_V_IDENTIFIER) Long id) {
-        return participationService.loadAllParticipationsOfSurveyForUser(id, getAuthenticatedUser());
+    @GetMapping(
+            value = PATH_SURVEY_PARTICIPATIONS,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity<List<ParticipationDTO>> loadParticipations(@PathVariable(name = PATH_V_IDENTIFIER) Long id) {
+        final List<ParticipationDTO> participations = participationService.loadAllParticipationsOfSurveyForUser(
+                        id,
+                        getAuthenticatedUser()
+                ).stream()
+                .map(this::asParticipationDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(participations);
+    }
+
+    private ParticipationDTO asParticipationDto(final Participation participation) {
+        return this.modelMapper.map(participation, ParticipationDTO.class);
     }
 
     /**
@@ -150,13 +203,21 @@ public class SurveyController {
      * @param surveyIdentifier of participation
      * @return created Participation
      */
-    @RequestMapping(value = PATH_SURVEY_PARTICIPATIONS,
-            method = RequestMethod.POST,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public Participation createParticipationForSurvey(@RequestBody Participation participation,
+    @PostMapping(
+            value = PATH_SURVEY_PARTICIPATIONS,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity<ParticipationDTO> createParticipationForSurvey(@RequestBody Participation participation,
                                                       @PathVariable(name = PATH_V_IDENTIFIER) Long surveyIdentifier) {
-        return participationService.saveParticipationForSurveyWithAuthenticatedUser(participation, surveyIdentifier,
-                getAuthenticatedUser());
+        final Participation createdParticipation = participationService.saveParticipationForSurveyWithAuthenticatedUser(
+                participation,
+                surveyIdentifier,
+                getAuthenticatedUser()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(asParticipationDto(createdParticipation));
     }
 
     /**
@@ -167,14 +228,27 @@ public class SurveyController {
      * @param participationIdentifier of participation
      * @return updated participation
      */
-    @RequestMapping(value = PATH_SURVEY_PARTICIPATIONS + "/{participation}",
-            method = RequestMethod.PUT,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public Participation saveParticipationForSurvey(@RequestBody Participation participation,
+    @PutMapping(
+            value = PATH_SURVEY_PARTICIPATIONS + "/{participation}",
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity<ParticipationDTO> saveParticipationForSurvey(@RequestBody ParticipationDTO participation,
                                                     @PathVariable(name = PATH_V_IDENTIFIER) Long surveyIdentifier,
                                                     @PathVariable(name = "participation") Long participationIdentifier) {
         participation.setId(participationIdentifier);
-        return participationService.saveParticipationForSurveyWithAuthenticatedUser(participation, surveyIdentifier, getAuthenticatedUser());
+        final Participation savedParticipation = participationService.saveParticipationForSurveyWithAuthenticatedUser(
+                asParticipation(participation),
+                surveyIdentifier,
+                getAuthenticatedUser()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .body(asParticipationDto(savedParticipation));
+    }
+
+    private Participation asParticipation(ParticipationDTO participation) {
+        return this.modelMapper.map(participation, Participation.class);
     }
 
     private User getAuthenticatedUser() {

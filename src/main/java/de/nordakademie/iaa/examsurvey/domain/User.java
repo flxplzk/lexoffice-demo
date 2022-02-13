@@ -3,6 +3,9 @@ package de.nordakademie.iaa.examsurvey.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.NaturalId;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,59 +27,25 @@ import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
  */
 @Entity
 @Table(name = "app_user")
+@Getter
+@Setter
 public class User extends AuditModel implements UserDetails {
-    private String firstName;
-    private String lastName;
-    private String password;
+    @NaturalId
+    @Column(name = "username", nullable = false)
     private String username;
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
+    @Column(name = "password", nullable = false)
+    private String password;
 
     public User() {
     }
 
     public User(String username, String password) {
-        this();
         this.password = password;
         this.username = username;
-    }
-
-    @NaturalId
-    @Column(name = "username", nullable = false)
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    @Column(name = "password", nullable = false)
-    @JsonProperty(access = WRITE_ONLY)
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    @Column(name = "first_name", nullable = false)
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    @Column(name = "last_name", nullable = false)
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
 
     // ### Transient fields relevant for Spring security not important for the app -> therefor no persistence ###

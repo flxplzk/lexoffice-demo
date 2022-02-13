@@ -1,10 +1,5 @@
 package de.nordakademie.iaa.examsurvey.domain;
 
-/**
- * Enum for Notifications.
- *
- * @author felix plazek
- */
 public enum NotificationType {
     SURVEY_CHANGE("Survey Changed"),
     EVENT_PLANNED("Event Planned"),

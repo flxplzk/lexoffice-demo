@@ -2,6 +2,8 @@ package de.nordakademie.iaa.examsurvey.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,37 +15,18 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import java.util.Date;
 
-/**
- * Base Entity for Date-Options toDateTime choose from within a Survey.
- *
- * @author felix plazek
- */
 @Entity
 @Table(name = "options")
+@Getter
+@Setter
 public class Option extends AuditModel {
-    private Date dateTime;
-    private Survey survey;
-
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    public Date getDateTime() {
-        return dateTime;
-    }
-
-    public void setDateTime(Date dateTime) {
-        this.dateTime = dateTime;
-    }
-
+    private Date dateTime;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "survey_id")
     @JsonIgnore
-    public Survey getSurvey() {
-        return survey;
-    }
-
-    public void setSurvey(Survey survey) {
-        this.survey = survey;
-    }
+    private Survey survey;
 
     @Override
     public boolean equals(Object o) {

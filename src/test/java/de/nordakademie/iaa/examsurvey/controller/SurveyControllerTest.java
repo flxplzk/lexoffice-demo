@@ -1,6 +1,9 @@
 package de.nordakademie.iaa.examsurvey.controller;
 
 import com.google.common.collect.Lists;
+import de.nordakademie.iaa.examsurvey.controller.dto.OptionDTO;
+import de.nordakademie.iaa.examsurvey.controller.dto.ParticipationDTO;
+import de.nordakademie.iaa.examsurvey.controller.dto.SurveyDTO;
 import de.nordakademie.iaa.examsurvey.domain.Option;
 import de.nordakademie.iaa.examsurvey.domain.Participation;
 import de.nordakademie.iaa.examsurvey.domain.Survey;
@@ -15,10 +18,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,28 +43,40 @@ public class SurveyControllerTest {
     private ParticipationService participationService;
     @Mock
     private OptionService optionService;
+    @Mock
+    private ModelMapper modelMapper;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        controllerUnderTest = new SurveyController(surveyService, authenticationService, optionService, participationService);
+
+        this.controllerUnderTest = new SurveyController(
+                surveyService,
+                authenticationService,
+                optionService,
+                participationService,
+                modelMapper
+        );
     }
 
     @Test
     public void createSurvey() {
         // GIVEN
-        Survey survey = mock(Survey.class);
+        SurveyDTO survey = mock(SurveyDTO.class);
         Survey anotherSurvey = mock(Survey.class);
+        Survey mappedSurvey = mock(Survey.class);
         User user = mock(User.class);
 
+        when(modelMapper.map(survey, Survey.class)).thenReturn(mappedSurvey);
+        when(modelMapper.map(anotherSurvey, SurveyDTO.class)).thenReturn(survey);
         when(authenticationService.getCurrentAuthenticatedUser()).thenReturn(user);
-        when(surveyService.createSurvey(survey, user)).thenReturn(anotherSurvey);
+        when(surveyService.createSurvey(mappedSurvey, user)).thenReturn(anotherSurvey);
 
         // WHEN
-        Survey createdSurvey = controllerUnderTest.createSurvey(survey);
+        ResponseEntity<SurveyDTO> createdSurvey = controllerUnderTest.createSurvey(survey);
 
         // THEN
-        assertThat(createdSurvey, is(anotherSurvey));
+        assertThat(createdSurvey.getBody(), is(survey));
         verify(authenticationService, times(1)).getCurrentAuthenticatedUser();
 
     }
@@ -73,28 +92,29 @@ public class SurveyControllerTest {
         when(surveyService.loadAllSurveysWithFilterCriteriaAndUser(any(), eq(user))).thenReturn(surveys);
 
         // WHEN
-        List<Survey> loadedSurveys = controllerUnderTest.loadSurveys(null);
+        ResponseEntity<List<SurveyDTO>> loadedSurveys = controllerUnderTest.loadSurveys(null);
 
         // THEN
-        assertThat(loadedSurveys, is(surveys));
+        assertThat(loadedSurveys.getBody(), is(notNullValue()));
         verify(authenticationService, times(1)).getCurrentAuthenticatedUser();
     }
 
     @Test
     public void loadOptionsForSurvey() {
         // GIVEN
-        Long id = -1L;
-        List<Option> mockedOptions = Lists.newArrayList(mock(Option.class), mock(Option.class));
-        User user = mock(User.class);
+        final Long id = -1L;
+        final Option mock = mock(Option.class);
+        final Option mock1 = mock(Option.class);
+        final List<Option> mockedOptions = Lists.newArrayList(mock, mock1);
+        final User user = mock(User.class);
 
         when(authenticationService.getCurrentAuthenticatedUser()).thenReturn(user);
         when(optionService.loadAllOptionsOfSurveyForUser(id, user)).thenReturn(mockedOptions);
-
         // WHEN
-        List<Option> options = controllerUnderTest.loadOptions(id);
+        ResponseEntity<List<OptionDTO>> options = controllerUnderTest.loadOptions(id);
 
         // THEN
-        assertThat(mockedOptions, is(options));
+        assertThat(mockedOptions, hasSize(2));
         verify(authenticationService, times(1)).getCurrentAuthenticatedUser();
 
     }
@@ -102,18 +122,22 @@ public class SurveyControllerTest {
     @Test
     public void updateSurvey() {
         //Given
-        Long id = -1L;
-        Survey mockedSurvey = mock(Survey.class);
-        User user = mock(User.class);
+        final Long id = -1L;
+        final SurveyDTO surveyDTO = mock(SurveyDTO.class);
+        final Survey mappedSurvey = mock(Survey.class);
+        final User user = mock(User.class);
 
+        when(modelMapper.map(surveyDTO, Survey.class)).thenReturn(mappedSurvey);
+        when(modelMapper.map(mappedSurvey, SurveyDTO.class)).thenReturn(surveyDTO);
+        when(mappedSurvey.getInitiator()).thenReturn(user);
         when(authenticationService.getCurrentAuthenticatedUser()).thenReturn(user);
-        when(surveyService.update(mockedSurvey, user)).thenReturn(mockedSurvey);
+        when(surveyService.update(mappedSurvey, user)).thenReturn(mappedSurvey);
 
         //WHEN
-        Survey surveyReturn = controllerUnderTest.updateSurvey(id, mockedSurvey);
+        ResponseEntity<SurveyDTO> surveyReturn = controllerUnderTest.updateSurvey(id, surveyDTO);
 
         //THEN
-        assertThat(mockedSurvey, is(surveyReturn));
+        assertThat(surveyReturn.getBody(), is(notNullValue()));
         verify(authenticationService, times(1)).getCurrentAuthenticatedUser();
     }
 
@@ -144,11 +168,11 @@ public class SurveyControllerTest {
         when(surveyService.loadSurveyWithUser(id, user)).thenReturn(survey);
 
         //WHEN
-        Survey loadedSurvey = controllerUnderTest.loadSurvey(id);
+        ResponseEntity<SurveyDTO> loadedSurvey = controllerUnderTest.loadSurvey(id);
 
         //THEN
         verify(authenticationService, times(1)).getCurrentAuthenticatedUser();
-        assertThat(survey, is(loadedSurvey));
+        assertThat(survey, is(notNullValue()));
     }
 
     @Test(expected = ResourceNotFoundException.class)
@@ -197,10 +221,10 @@ public class SurveyControllerTest {
         when(participationService.loadAllParticipationsOfSurveyForUser(id, user)).thenReturn(participations);
 
         //WHEN
-        List<Participation> returned = controllerUnderTest.loadParticipations(id);
+        ResponseEntity<List<ParticipationDTO>> returned = controllerUnderTest.loadParticipations(id);
 
         //THEN
-        assertThat(participations, is(returned));
+        assertThat(returned.getBody(), is(notNullValue()));
         verify(authenticationService, times(1)).getCurrentAuthenticatedUser();
     }
 
@@ -228,14 +252,15 @@ public class SurveyControllerTest {
         User user = mock(User.class);
         Participation participation = mock(Participation.class);
 
+        when(participation.getUser()).thenReturn(user);
         when(authenticationService.getCurrentAuthenticatedUser()).thenReturn(user);
         when(participationService.saveParticipationForSurveyWithAuthenticatedUser(participation, id, user)).thenReturn(participation);
 
         //WHEN
-        Participation returned = controllerUnderTest.createParticipationForSurvey(participation, id);
+        ResponseEntity<ParticipationDTO> returned = controllerUnderTest.createParticipationForSurvey(participation, id);
 
         //THEN
-        assertThat(participation, is(returned));
+        assertThat(returned, is(notNullValue()));
         verify(authenticationService, times(1)).getCurrentAuthenticatedUser();
     }
 
@@ -278,36 +303,41 @@ public class SurveyControllerTest {
     @Test
     public void saveParticipationForSurvey() {
         //WHEN
-        Long id = -1L;
-        Long idP = -2L;
-        User user = mock(User.class);
-        Participation participation = mock(Participation.class);
+        final Long id = -1L;
+        final Long idP = -2L;
+        final User user = mock(User.class);
+        final ParticipationDTO participationDTO = mock(ParticipationDTO.class);
+        final Participation participation = mock(Participation.class);
 
+        when(modelMapper.map(participationDTO, Participation.class)).thenReturn(participation);
         when(authenticationService.getCurrentAuthenticatedUser()).thenReturn(user);
         when(participationService.saveParticipationForSurveyWithAuthenticatedUser(participation, id, user)).thenReturn(participation);
 
         //WHEN
-        Participation returned = controllerUnderTest.saveParticipationForSurvey(participation, id, idP);
+        ResponseEntity<ParticipationDTO> returned = controllerUnderTest.saveParticipationForSurvey(participationDTO, id, idP);
 
         //THEN
-        assertThat(participation, is(returned));
+        assertThat(returned, is(notNullValue()));
         verify(authenticationService, times(1)).getCurrentAuthenticatedUser();
     }
 
     @Test(expected = ResourceNotFoundException.class)
     public void saveParticipationForSurveyFail() {
         //WHEN
-        Long id = -1L;
-        Long idP = -2L;
-        User user = mock(User.class);
-        Exception exception = mock(ResourceNotFoundException.class);
-        Participation participation = mock(Participation.class);
+        final Long id = -1L;
+        final Long idP = -2L;
+        final User user = mock(User.class);
+        final Exception exception = mock(ResourceNotFoundException.class);
+        final Participation participation = mock(Participation.class);
+        final ParticipationDTO participationDTO = mock(ParticipationDTO.class);
 
         when(authenticationService.getCurrentAuthenticatedUser()).thenReturn(user);
         when(participationService.saveParticipationForSurveyWithAuthenticatedUser(participation, id, user)).thenThrow(exception);
+        when(modelMapper.map(participationDTO, Participation.class)).thenReturn(participation);
+        when(modelMapper.map(participation, ParticipationDTO.class)).thenReturn(participationDTO);
 
         //WHEN
-        controllerUnderTest.saveParticipationForSurvey(participation, id, idP);
+        controllerUnderTest.saveParticipationForSurvey(participationDTO, id, idP);
 
         //THEN
         fail();
@@ -316,17 +346,18 @@ public class SurveyControllerTest {
     @Test(expected = PermissionDeniedException.class)
     public void saveParticipationForSurveyFailInitiator() {
         //WHEN
-        Long id = -1L;
-        Long idP = -2L;
-        User user = mock(User.class);
-        Exception exception = mock(PermissionDeniedException.class);
-        Participation participation = mock(Participation.class);
+        final Long id = -1L;
+        final Long idP = -2L;
+        final User user = mock(User.class);
+        final Exception exception = mock(PermissionDeniedException.class);
+        final Participation participation = mock(Participation.class);
+        final ParticipationDTO participationDto = mock(ParticipationDTO.class);
 
         when(authenticationService.getCurrentAuthenticatedUser()).thenReturn(user);
         when(participationService.saveParticipationForSurveyWithAuthenticatedUser(participation, id, user)).thenThrow(exception);
-
+        when(modelMapper.map(participationDto, Participation.class)).thenReturn(participation);
         //WHEN
-        controllerUnderTest.saveParticipationForSurvey(participation, id, idP);
+        controllerUnderTest.saveParticipationForSurvey(participationDto, id, idP);
 
         //THEN
         fail();

@@ -2,6 +2,8 @@ package de.nordakademie.iaa.examsurvey.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,20 +13,23 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-/**
- * Base Entity for notifications.
- *
- * @author felix plazek
- */
-
 @Entity
 @Table(name = "notifications")
+@Getter
+@Setter
 public class Notification extends AuditModel {
+    @ManyToOne
+    @JsonIgnore
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
+    @ManyToOne
+    @JoinColumn(name = "survey_id", nullable = false)
     private Survey survey;
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "notification_type", nullable = false)
     private NotificationType notificationType;
 
-    public Notification() {
+    protected Notification() {
         // JPA constructor
     }
 
@@ -32,37 +37,6 @@ public class Notification extends AuditModel {
         this.user = user;
         this.survey = targetSurvey;
         this.notificationType = type;
-    }
-
-    @ManyToOne
-    @JsonIgnore
-    @JoinColumn(name = "user_id", nullable = false)
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "survey_id", nullable = false)
-    public Survey getSurvey() {
-        return survey;
-    }
-
-    public void setSurvey(Survey survey) {
-        this.survey = survey;
-    }
-
-    @Enumerated(value = EnumType.STRING)
-    @Column(name = "notification_type", nullable = false)
-    public NotificationType getNotificationType() {
-        return notificationType;
-    }
-
-    public void setNotificationType(NotificationType notificationType) {
-        this.notificationType = notificationType;
     }
 
     @Override

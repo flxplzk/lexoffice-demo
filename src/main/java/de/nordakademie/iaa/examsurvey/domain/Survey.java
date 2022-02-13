@@ -1,111 +1,49 @@
 package de.nordakademie.iaa.examsurvey.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.NaturalId;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.util.Set;
 
-import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
-
-/**
- * Base Entity for Survey, containing basic information.
- *
- * @author felix plazek
- */
 @Entity
 @Table(name = "surveys")
+@Getter
+@Setter
 public class Survey extends AuditModel {
-    private String title;
-    private String description;
-    private User initiator;
-    private Event event;
-    private SurveyStatus surveyStatus;
-    private Set<Option> options;
-
-    @Transient
-    public boolean isOpen() {
-        return SurveyStatus.OPEN.equals(this.surveyStatus);
-    }
-
     @NaturalId
     @Size(max = 50)
     @Column(name = "title", nullable = false)
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
+    private String title;
     @Size(max = 1000)
     @Column(name = "description", nullable = false)
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
+    private String description;
     @ManyToOne
     @JoinColumn(name = "initiator_id", nullable = false)
-    public User getInitiator() {
-        return initiator;
-    }
-
-    public void setInitiator(User initiator) {
-        this.initiator = initiator;
-    }
-
+    private User initiator;
     @Column(name = "survey_status", nullable = false)
     @Enumerated(value = EnumType.STRING)
-    public SurveyStatus getSurveyStatus() {
-        return surveyStatus;
-    }
-
-    public void setSurveyStatus(SurveyStatus surveyStatus) {
-        this.surveyStatus = surveyStatus;
-    }
-
-    /**
-     * This field is only used for data transfer purpose. When Saving the options are saved separately to options table
-     *
-     * @return set of Options or {@code null} when loading from database
-     */
+    private SurveyStatus surveyStatus;
+    @OneToOne(
+            mappedBy = "survey",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true
+    )
+    private Event event;
     @Transient
-    @JsonProperty(access = WRITE_ONLY)
-    public Set<Option> getOptions() {
-        return options;
+    private Set<Option> options;
+
+    public boolean isInitiator(final User authenticatedUser) {
+        return this.initiator != null &&
+                this.initiator.equals(authenticatedUser);
     }
 
-    public void setOptions(Set<Option> options) {
-        this.options = options;
-    }
-
-    @JsonIgnore
-    @OneToOne(mappedBy = "survey", cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY, orphanRemoval = true)
-    public Event getEvent() {
-        return event;
-    }
-
-    public void setEvent(Event event) {
-        this.event = event;
+    public boolean isOpen() {
+        return SurveyStatus.OPEN.equals(this.surveyStatus);
     }
 
     @Override
@@ -129,11 +67,5 @@ public class Survey extends AuditModel {
     @Override
     public int hashCode() {
         return Objects.hashCode(super.hashCode(), title, description, initiator, surveyStatus);
-    }
-
-    @Transient
-    public boolean isInitiator(final User authenticatedUser) {
-        return this.initiator != null &&
-                this.initiator.equals(authenticatedUser);
     }
 }

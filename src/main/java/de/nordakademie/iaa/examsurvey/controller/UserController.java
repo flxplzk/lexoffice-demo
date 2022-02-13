@@ -1,5 +1,8 @@
 package de.nordakademie.iaa.examsurvey.controller;
 
+import de.nordakademie.iaa.examsurvey.controller.dto.EventDTO;
+import de.nordakademie.iaa.examsurvey.controller.dto.NotificationDTO;
+import de.nordakademie.iaa.examsurvey.controller.dto.UserDTO;
 import de.nordakademie.iaa.examsurvey.domain.Event;
 import de.nordakademie.iaa.examsurvey.domain.Notification;
 import de.nordakademie.iaa.examsurvey.domain.User;
@@ -8,12 +11,16 @@ import de.nordakademie.iaa.examsurvey.service.AuthenticationService;
 import de.nordakademie.iaa.examsurvey.service.EventService;
 import de.nordakademie.iaa.examsurvey.service.NotificationService;
 import de.nordakademie.iaa.examsurvey.service.UserService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Felix Plazek
@@ -29,16 +36,19 @@ public class UserController {
     private final AuthenticationService authenticationService;
     private final NotificationService notificationService;
     private final EventService eventService;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public UserController(UserService userService,
-                          AuthenticationService authenticationService,
-                          NotificationService notificationService,
-                          EventService eventService) {
+    public UserController(final UserService userService,
+                          final AuthenticationService authenticationService,
+                          final NotificationService notificationService,
+                          final EventService eventService,
+                          final ModelMapper modelMapper) {
         this.userService = userService;
         this.authenticationService = authenticationService;
         this.notificationService = notificationService;
         this.eventService = eventService;
+        this.modelMapper = modelMapper;
     }
 
     /**
@@ -49,7 +59,7 @@ public class UserController {
      */
     @RequestMapping(value = PATH_USERS + "/me",
             method = RequestMethod.GET)
-    public Principal user(Principal user) {
+    public Principal user(final Principal user) {
         return user;
     }
 
@@ -59,13 +69,23 @@ public class UserController {
      * @param user to create
      * @return created user
      */
-    @RequestMapping(value = PATH_USERS,
-            method = RequestMethod.POST,
+    @PostMapping(value = PATH_USERS,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
+    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO user) {
+        final User createdUser = userService.createUser(asUser(user));
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(asUserDto(createdUser));
+    }
+
+    private User asUser(UserDTO user) {
+        return modelMapper.map(user, User.class);
+    }
+
+    private UserDTO asUserDto(final User user) {
+        return modelMapper.map(user, UserDTO.class);
     }
 
     /**
@@ -73,12 +93,22 @@ public class UserController {
      *
      * @return notifications for authenticated user
      */
-    @RequestMapping(value = PATH_USERS_NOTIFICATIONS,
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<Notification> getNotifications() {
-        User authenticatedUser = authenticationService.getCurrentAuthenticatedUser();
-        return notificationService.getNotificationsForUser(authenticatedUser);
+    @GetMapping(
+            value = PATH_USERS_NOTIFICATIONS,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity<List<NotificationDTO>> getNotifications() {
+        final User authenticatedUser = authenticationService.getCurrentAuthenticatedUser();
+        final List<NotificationDTO> notificationsForUser = notificationService.getNotificationsForUser(authenticatedUser)
+                .stream()
+                .map(this::asNotificationDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(notificationsForUser);
+    }
+
+    private NotificationDTO asNotificationDto(final Notification notification) {
+        return modelMapper.map(notification, NotificationDTO.class);
     }
 
     /**
@@ -86,8 +116,7 @@ public class UserController {
      *
      * @param id of the notification to delete
      */
-    @RequestMapping(value = PATH_USERS_NOTIFICATIONS + "/{id}",
-            method = RequestMethod.DELETE)
+    @DeleteMapping(value = PATH_USERS_NOTIFICATIONS + "/{id}")
     public void getNotifications(@PathVariable(name = "id") Long id) {
         notificationService.deleteNotificationWithUser(id, authenticationService.getCurrentAuthenticatedUser());
     }
@@ -97,11 +126,21 @@ public class UserController {
      *
      * @return all events for authenticated User
      */
-    @RequestMapping(value = PATH_USERS_EVENTS,
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<Event> loadEventsForUser() {
-        return eventService.loadAllEventsForAuthenticatedUser(authenticationService.getCurrentAuthenticatedUser());
+    @GetMapping(
+            value = PATH_USERS_EVENTS,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity<List<EventDTO>> loadEventsForUser() {
+        final User currentAuthenticatedUser = authenticationService.getCurrentAuthenticatedUser();
+        final List<EventDTO> events = eventService.loadAllEventsForAuthenticatedUser(currentAuthenticatedUser).stream()
+                .map(this::asEventDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(events);
+    }
+
+    private EventDTO asEventDto(final Event event) {
+        return modelMapper.map(event, EventDTO.class);
     }
 
     /**
@@ -110,11 +149,19 @@ public class UserController {
      * @param event to create
      * @return created event
      */
-    @RequestMapping(value = PATH_USERS_EVENTS,
-            method = RequestMethod.POST,
+    @PostMapping(value = PATH_USERS_EVENTS,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public Event createEvent(@RequestBody Event event) {
-        return eventService.createEvent(event, authenticationService.getCurrentAuthenticatedUser());
+    public ResponseEntity<EventDTO> createEvent(@RequestBody EventDTO event) {
+        final Event createdEvent = eventService.createEvent(
+                asEvent(event),
+                authenticationService.getCurrentAuthenticatedUser()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(asEventDto(createdEvent));
+    }
+
+    private Event asEvent(EventDTO event) {
+        return modelMapper.map(event, Event.class);
     }
 }

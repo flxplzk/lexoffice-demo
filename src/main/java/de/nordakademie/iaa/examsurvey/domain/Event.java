@@ -2,6 +2,8 @@ package de.nordakademie.iaa.examsurvey.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,57 +17,22 @@ import javax.persistence.TemporalType;
 import java.util.Date;
 import java.util.Set;
 
-/**
- * BAse Entity for Events
- *
- * @author Felix Plazek
- */
 @Entity
 @Table(name = "event")
+@Getter
+@Setter
 public class Event extends AuditModel {
-    private String title;
-    private Date time;
-    private Survey survey;
-    private Set<User> participants;
-
     @Column(name = "event_title", nullable = false)
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
+    private String title;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "event_time", nullable = false)
-    public Date getTime() {
-        return time;
-    }
-
-    public void setTime(Date time) {
-        this.time = time;
-    }
-
+    private Date time;
     @OneToOne
     @JoinColumn(name = "survey_id")
-    public Survey getSurvey() {
-        return survey;
-    }
-
-    public void setSurvey(Survey survey) {
-        this.survey = survey;
-    }
-
+    private Survey survey;
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
-    public Set<User> getParticipants() {
-        return participants;
-    }
-
-    public void setParticipants(Set<User> participants) {
-        this.participants = participants;
-    }
+    private Set<User> participants;
 
     @Override
     public boolean equals(Object o) {
