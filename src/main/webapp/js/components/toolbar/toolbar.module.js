@@ -17,35 +17,29 @@
         "ngMaterial"
     ]);
 
-    toolbar.controller("mainController", ["appService", ToolBarController]);
-    toolbar.directive("surveyToolBar", ["ROUTE_STATES", ToolBarDirective]);
+    toolbar.controller("mainController", ["$scope", "$state", "ROUTE_STATES", "appService", ToolBarController]);
+    toolbar.directive("surveyToolbar", ToolBarDirective);
 
-    function ToolBarController(appService) {
-        this.authenticated = false;
-        var vm = this;
+    function ToolBarController($scope, $state, ROUTE_STATES, appService) {
+        $scope.authenticated = false;
+
         appService.$authenticated.subscribeOnNext(function (authenticationStatus) {
-            vm.authenticated = authenticationStatus;
+            $scope.authenticated = authenticationStatus;
         });
+
         this.logout = function () {
             appService.logout();
         }
+
+        $scope.homeRef = ROUTE_STATES.DASHBOARD_STATE;
     }
 
-    function ToolBarDirective(ROUTE_STATES) {
+    function ToolBarDirective() {
         return {
             restrict: "E",
-            template: "<md-toolbar ng-controller=\"mainController as toolBarCrtl\" layout=\"row\" class=\"md-toolbar-tools\">\n" +
-                "        <a ui-sref="+ ROUTE_STATES.DASHBOARD_STATE +" ><h2 md-truncate>{{\"APP_HEADLINE\"|translate}}</h2></a>\n" +
-                "        <span flex></span>" +
-                "        <language-selector></language-selector>" +
-                "        <survey-editor-action-button icon='add' ng-show=\"toolBarCrtl.authenticated\">" +
-                "        </survey-editor-action-button>" +
-                "        <md-button ng-show=\"toolBarCrtl.authenticated\" ng-click=\"toolBarCrtl.logout()\"\n" +
-                "                   class=\"md-icon-button\">\n" +
-                "            <i class=\"material-icons\">power_settings_new</i>" +
-                "           <md-tooltip >{{\"APP_LOGOUT\"|translate}}</md-tooltip>\n" +
-                "        </md-button>\n" +
-                "</md-toolbar>"
+            templateUrl: "/js/components/toolbar/survey-toolbar.template.html",
+            controller: "mainController",
+            controllerAs: "toolBarCrtl"
         }
     }
 

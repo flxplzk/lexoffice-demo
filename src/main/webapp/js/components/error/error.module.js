@@ -18,27 +18,22 @@
     ]);
 
     var ERROR_STATE = 'error';
-    error.directive("error", ["ROUTE_STATES", ErrorDirective]);
-    error.controller("errorPageController", ["$scope", "$stateParams", ErrorPageController]);
+    error.directive("error", ErrorDirective);
+    error.controller("errorPageController", ["$scope", "$stateParams", "$state", "ROUTE_STATES", ErrorPageController]);
 
-    function ErrorDirective(ROUTE_STATES) {
+    function ErrorDirective() {
         return {
             restrict: "E",
             controller: "errorPageController",
             controllerAs: "errorCrtl",
-            template:
-               "<div layout='column' layout-align='center center' flex>\n" +
-                "    <h1>{{heading|translate}}</h1>\n" +
-                "    <h4>{{'ERROR_SUB_HEADING'|translate}}</h4>\n" +
-                "    <what-would-nicolas-say></what-would-nicolas-say>\n" +
-                "<md-button class='md-icon-button md-raised' ui-sref=" + ROUTE_STATES.DASHBOARD_STATE +">" +
-                "<i class='material-icons'>home</i> "+
-                "</md-button> " +
-                "</div>"
+            templateUrl: "/js/components/error/error.template.html"
         }
     }
 
-    function ErrorPageController($scope, $stateParams){
+    function ErrorPageController($scope, $stateParams, $state, ROUTE_STATES){
+        this.navigateToDashboard = function() {
+            $state.go(ROUTE_STATES.DASHBOARD_STATE);
+        }
         $scope.heading = $stateParams.reason === "500" ? "ERROR_HEADING" :
             $stateParams.reason === "404" ? "ERROR_HEADING_404" : "ERROR_HEADING_NETWORK";
     }

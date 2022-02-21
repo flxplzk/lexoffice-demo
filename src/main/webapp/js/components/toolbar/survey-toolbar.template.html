@@ -1,0 +1,18 @@
+<md-toolbar layout="row"
+            class="md-toolbar-tools">
+    <a ui-sref="{{homeRef}}">
+        <h2 md-truncate>{{"APP_HEADLINE" | translate}}</h2>
+    </a>
+    <span flex></span>
+    <language-selector></language-selector>
+    <survey-editor-action-button
+            icon='add'
+            ng-show=authenticated>
+    </survey-editor-action-button>
+    <md-button ng-show=authenticated
+               ng-click=toolBarCrtl.logout()
+               class="md-icon-button">
+        <i class="material-icons">power_settings_new</i>
+        <md-tooltip>{{"APP_LOGOUT" | translate}}</md-tooltip>
+    </md-button>
+</md-toolbar>

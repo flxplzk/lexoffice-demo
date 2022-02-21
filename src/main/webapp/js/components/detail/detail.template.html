@@ -12,8 +12,7 @@
                        {{"DETAIL_INITIATOR"|translate}}: {{survey.initiator.username}}
                     </span>
             </md-card-title-text>
-            <md-card-actions layout="row" layout-align="end center"
-                             ng-show="detailCrtl.isOwnSurvey()">
+            <md-card-actions layout="row" layout-align="end center" ng-show="detailCrtl.isOwnSurvey()">
                 <survey-editor-action-button ng-show="!survey.isClosed()"
                                              icon="build"
                                              survey-id="surveyId">

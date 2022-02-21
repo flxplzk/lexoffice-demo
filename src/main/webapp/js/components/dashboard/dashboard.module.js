@@ -71,7 +71,7 @@
     function DashboardSideNavDirective() {
         return {
             restrict: "E",
-            templateUrl: "/js/components/dashboard/dashboard.side.nav.template.html",
+            templateUrl: "/js/components/dashboard/dashboard-side-nav.template.html",
             controller: "dashboardSideNavController",
             controllerAs: "sideNavCrtl"
         }
@@ -80,20 +80,7 @@
     function SurveyListingDirective() {
         return {
             restrict: "E",
-            template: " <md-list>\n" +
-                "         <md-list-item class=\"md-2-line\" ng-repeat=\"survey in model.surveys\"\n" +
-                "           ng-click=\"dashboardCrtl.viewDetails(survey)\">\n" +
-                "             <div class=\"md-list-item-text\">\n" +
-                "                <h3>{{survey.title}}</h3>\n" +
-                "                <h4>{{survey.description}}</h4>\n" +
-                "                 </div>\n" +
-                "                 <md-button class=\"md-icon-button md-primary\"\n" +
-                "                      ng-click=\"dashboardCrtl.viewDetails(survey)\">\n" +
-                "                      <i class=\"material-icons\">{{ survey.isOpen() ? \"lock_open\" : \"lock_closed\"}}</i>\n" +
-                "                 </md-button>\n" +
-                "            <md-divider ng-if=\"!$last\"></md-divider>\n" +
-                "         </md-list-item>\n" +
-                "        </md-list>",
+            templateUrl: "/js/components/dashboard/survey-listing.template.html",
             scope: {
                 filter: "@"
             },
@@ -126,7 +113,7 @@
 
         $scope.showAdvanced = function (ev) {
             $mdDialog.show({
-                templateUrl: "/js/components/editor/editor.dialog.template.html",
+                templateUrl: "/js/components/editor/editor-dialog.template.html",
                 parent: angular.element(document.body),
                 targetEvent: ev,
                 clickOutsideToClose: true,

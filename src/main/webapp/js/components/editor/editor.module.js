@@ -34,11 +34,7 @@
                 surveyId: "=",
                 icon: "@"
             },
-            template: "<div>" +
-                "<md-button class=\"md-primary md-raised md-accent md-icon-button\"" +
-                " ng-click=\"dialogManager.showEditorDialog($event)\">" +
-                "<i class=\"material-icons\"> {{icon}} </i></md-button>" +
-                "</div>"
+            templateUrl: "/js/components/editor/create-survey-button.template.html"
         }
     }
 
@@ -52,11 +48,7 @@
                 surveyId: "=",
                 icon: "@"
             },
-            template: "<div>" +
-                "<md-button class=\"md-primary md-raised md-accent md-icon-button\"" +
-                " ng-click=\"closeCrtl.close($event)\">" +
-                "<i class=\"material-icons\"> {{icon}} </i></md-button>" +
-                "</div>"
+            templateUrl: "/js/components/editor/close-button.template.html"
         }
     }
 
@@ -64,7 +56,7 @@
         this.close = function (ev) {
             $mdDialog.show({
                 locals: {surveyId: $scope.surveyId},
-                templateUrl: "/js/components/editor/close.dialog.template.html",
+                templateUrl: "/js/components/editor/close-dialog.template.html",
                 controller: ["$mdDialog", "$scope", "EventResource", "SurveyResource",
                     "OptionResource", "$state", "surveyId", SurveyCloseController],
                 controllerAs: "surveyCloseCrtl",
@@ -158,7 +150,7 @@
         this.showEditorDialog = function (ev) {
             $mdDialog.show({
                 locals: {surveyId: $scope.surveyId},
-                templateUrl: "/js/components/editor/editor.dialog.template.html",
+                templateUrl: "/js/components/editor/editor-dialog.template.html",
                 controller: ["$scope", "$mdDialog", "SurveyResource", "OptionResource", "$state",
                     "notificationService", "ROUTE_STATES", "surveyId", EditorController],
                 controllerAs: "surveyEditorController",
