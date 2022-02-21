@@ -84,7 +84,7 @@
                 return;
             }
             return angular.isDefined($scope.survey.initiator) && angular.isDefined(currentUser)
-                && $scope.survey.initiator.equals(currentUser.principal);
+                && $scope.survey.initiator.equals(currentUser);
         };
 
         this.save = function () {
@@ -105,7 +105,7 @@
                 return;
             }
             $scope.participations = $scope.participations.filter(function (value, index) {
-                if (value.user.username === currentUser.principal.username) {
+                if (value.user.username === currentUser.username) {
                     $scope.ownParticipation = value;
                     $scope.options.forEach(function (option) {
                         option.checked = vm.participates($scope.ownParticipation, option);

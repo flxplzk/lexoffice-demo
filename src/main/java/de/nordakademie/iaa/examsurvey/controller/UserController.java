@@ -2,6 +2,7 @@ package de.nordakademie.iaa.examsurvey.controller;
 
 import de.nordakademie.iaa.examsurvey.controller.dto.EventDTO;
 import de.nordakademie.iaa.examsurvey.controller.dto.NotificationDTO;
+import de.nordakademie.iaa.examsurvey.controller.dto.UserCreationDTO;
 import de.nordakademie.iaa.examsurvey.controller.dto.UserDTO;
 import de.nordakademie.iaa.examsurvey.domain.Event;
 import de.nordakademie.iaa.examsurvey.domain.Notification;
@@ -16,9 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,10 +58,12 @@ public class UserController {
      * @param user current
      * @return current user
      */
-    @RequestMapping(value = PATH_USERS + "/me",
-            method = RequestMethod.GET)
-    public Principal user(final Principal user) {
-        return user;
+    @GetMapping(value = PATH_USERS + "/me")
+    public ResponseEntity<UserDTO> user(final Authentication authentication) {
+        final User details = (User) authentication.getPrincipal();
+        final UserDTO userDTO = this.modelMapper.map(details, UserDTO.class);
+
+        return ResponseEntity.ok(userDTO);
     }
 
     /**
@@ -73,14 +76,14 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO user) {
+    public ResponseEntity<UserDTO> createUser(@RequestBody UserCreationDTO user) {
         final User createdUser = userService.createUser(asUser(user));
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(asUserDto(createdUser));
     }
 
-    private User asUser(UserDTO user) {
+    private User asUser(final UserCreationDTO user) {
         return modelMapper.map(user, User.class);
     }
 

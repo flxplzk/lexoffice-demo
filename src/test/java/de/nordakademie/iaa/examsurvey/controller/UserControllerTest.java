@@ -3,6 +3,7 @@ package de.nordakademie.iaa.examsurvey.controller;
 import com.google.common.collect.Lists;
 import de.nordakademie.iaa.examsurvey.controller.dto.EventDTO;
 import de.nordakademie.iaa.examsurvey.controller.dto.NotificationDTO;
+import de.nordakademie.iaa.examsurvey.controller.dto.UserCreationDTO;
 import de.nordakademie.iaa.examsurvey.controller.dto.UserDTO;
 import de.nordakademie.iaa.examsurvey.domain.Event;
 import de.nordakademie.iaa.examsurvey.domain.Notification;
@@ -18,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 
 import java.security.Principal;
 import java.util.List;
@@ -61,30 +63,36 @@ public class UserControllerTest {
     @Test
     public void user() {
         // GIVEN
-        Principal user = mock(Principal.class);
+        final Authentication auth = mock(Authentication.class);
+        final User user = mock(User.class);
+        final UserDTO dto = mock(UserDTO.class);
+
+        when(auth.getPrincipal()).thenReturn(user);
+        when(modelMapper.map(user, UserDTO.class)).thenReturn(dto);
 
         // WHEN
-        Principal principal = controllerUnderTest.user(user);
+        ResponseEntity<UserDTO> principal = controllerUnderTest.user(auth);
 
         // THEN
-        assertThat(principal, is(user));
+        assertThat(principal.getBody(), is(dto));
     }
 
     @Test
     public void createUser() {
         // GIVEN
         final User user = mock(User.class);
-        final UserDTO userDTO = mock(UserDTO.class);
+        final UserCreationDTO userDTO = mock(UserCreationDTO.class);
+        final UserDTO createdUserDTO = mock(UserDTO.class);
 
         when(modelMapper.map(userDTO, User.class)).thenReturn(user);
-        when(modelMapper.map(user, UserDTO.class)).thenReturn(userDTO);
+        when(modelMapper.map(user, UserDTO.class)).thenReturn(createdUserDTO);
         when(userService.createUser(user)).thenReturn(user);
 
         // WHEN
         ResponseEntity<UserDTO> createdUser = controllerUnderTest.createUser(userDTO);
 
         // THEN
-        assertThat(createdUser.getBody(), is(userDTO));
+        assertThat(createdUser.getBody(), is(createdUserDTO));
 
     }
 
@@ -92,10 +100,11 @@ public class UserControllerTest {
     public void createUserAlreadyExists() {
         // GIVEN
         final User user = mock(User.class);
-        final UserDTO userDTO = mock(UserDTO.class);
+        final UserCreationDTO userDTO = mock(UserCreationDTO.class);
+        final UserDTO createdUserDTO = mock(UserDTO.class);
 
         when(modelMapper.map(userDTO, User.class)).thenReturn(user);
-        when(modelMapper.map(user, UserDTO.class)).thenReturn(userDTO);
+        when(modelMapper.map(user, UserDTO.class)).thenReturn(createdUserDTO);
 
         when(userService.createUser(user)).thenThrow(new UserAlreadyExistsException());
 

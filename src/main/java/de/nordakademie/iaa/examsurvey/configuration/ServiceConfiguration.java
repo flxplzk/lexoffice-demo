@@ -5,10 +5,8 @@ import de.nordakademie.iaa.examsurvey.service.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.ui.ModelMap;
 
 @Configuration
 public class ServiceConfiguration {

@@ -1,9 +1,7 @@
 package de.nordakademie.iaa.examsurvey.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.NaturalId;
@@ -16,8 +14,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.util.Collection;
 import java.util.Collections;
-
-import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
 /**
  * Base Entity for application user.

@@ -6,10 +6,11 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class NotificationDTO implements Serializable {
+public class UserCreationDTO implements Serializable {
     @JsonProperty(value = "_id")
     private Long id;
-    private UserDTO user;
-    private SurveyDTO survey;
-    private String notificationType;
+    private String username;
+    private String firstName;
+    private String password;
+    private String lastName;
 }

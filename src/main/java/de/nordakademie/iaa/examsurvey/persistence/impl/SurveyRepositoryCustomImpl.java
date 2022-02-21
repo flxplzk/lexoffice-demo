@@ -4,8 +4,8 @@ import de.nordakademie.iaa.examsurvey.controller.filtercriterion.FilterCriteria;
 import de.nordakademie.iaa.examsurvey.domain.Survey;
 import de.nordakademie.iaa.examsurvey.domain.Survey_;
 import de.nordakademie.iaa.examsurvey.domain.User;
-import de.nordakademie.iaa.examsurvey.persistence.SurveyRepositoryCustom;
 import de.nordakademie.iaa.examsurvey.persistence.SpecificationExecutor;
+import de.nordakademie.iaa.examsurvey.persistence.SurveyRepositoryCustom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 

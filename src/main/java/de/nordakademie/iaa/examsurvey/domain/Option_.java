@@ -1,10 +1,7 @@
 package de.nordakademie.iaa.examsurvey.domain;
 
-import org.hibernate.query.criteria.internal.OrderImpl;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Order;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 import java.util.Date;

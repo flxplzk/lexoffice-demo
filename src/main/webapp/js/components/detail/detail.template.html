@@ -12,9 +12,12 @@
                        {{"DETAIL_INITIATOR"|translate}}: {{survey.initiator.username}}
                     </span>
             </md-card-title-text>
-            <md-card-actions layout="row" layout-align="end center" ng-show="detailCrtl.isOwnSurvey()">
-                <survey-editor-action-button ng-show="!survey.isClosed()" icon="build"
-                                             survey-id="surveyId"></survey-editor-action-button>
+            <md-card-actions layout="row" layout-align="end center"
+                             ng-show="detailCrtl.isOwnSurvey()">
+                <survey-editor-action-button ng-show="!survey.isClosed()"
+                                             icon="build"
+                                             survey-id="surveyId">
+                </survey-editor-action-button>
                 <delete-survey-action-button icon="delete" survey-id="surveyId"></delete-survey-action-button>
                 <close-survey-action-button ng-show="survey.isOpen()" icon="event"
                                             survey-id="surveyId"></close-survey-action-button>

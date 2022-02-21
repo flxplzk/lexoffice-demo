@@ -2,8 +2,8 @@ package de.nordakademie.iaa.examsurvey.persistence.impl;
 
 import de.nordakademie.iaa.examsurvey.domain.User;
 import de.nordakademie.iaa.examsurvey.domain.User_;
-import de.nordakademie.iaa.examsurvey.persistence.UserRepositoryCustom;
 import de.nordakademie.iaa.examsurvey.persistence.SpecificationExecutor;
+import de.nordakademie.iaa.examsurvey.persistence.UserRepositoryCustom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
